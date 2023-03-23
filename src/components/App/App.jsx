@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState } from 'react';
 
 import { FeedbackOptions } from 'components/FeedbackOptions/FeedbackOptions';
 import { Statistics } from 'components/Statistics/Statistics';
@@ -6,71 +6,81 @@ import { Section } from 'components/Section/Section';
 import { Notification } from 'components/Notification/Notification';
 
 import { Wrapper } from 'components/App/App.styled';
-	
-export class App extends Component {
-	utils = {
-		total: 0,
-		positivePercentage: 0
-	}
 
-	state = {
-		good: 0,
-		neutral: 0,
-		bad: 0
-	}
+export function App() {
+    const utils = {
+        total: 0,
+        positivePercentage: 0,
+    };
 
-	handleClick = (e) => {
-		const targetName = e.target.name;
+    const [good, setGood] = useState(0);
+    const [neutral, setNeutral] = useState(0);
+    const [bad, setBad] = useState(0);
 
-		this.setState((prevState) => {
-			if (targetName === 'good') {
-				this.countPositiveFeedbackPercentage(prevState.good + 1);
-			} else {
-				this.countPositiveFeedbackPercentage(prevState.good);
-			}
-			return {
-				[targetName]: prevState[targetName] + 1,
-			}
-		});
+    function handleClick(e) {
+        const targetName = e.target.name;
 
-		this.countTotalFeedback();
-	}
+        if (targetName === 'good') {
+            setGood(prevGood => {
+                countPositiveFeedbackPercentage(prevGood + 1);
+                return prevGood + 1;
+            });
+        } else if (targetName === 'neutral') {
+            setNeutral(prevNeutral => {
+                countPositiveFeedbackPercentage(good);
+                return prevNeutral + 1;
+            });
+        } else {
+            setBad(prevBad => {
+                countPositiveFeedbackPercentage(good);
+                return prevBad + 1;
+            });
+        }
 
-	countTotalFeedback() {
-		this.utils.total += 1;
-	}
+        countTotalFeedback();
+    }
 
-	countPositiveFeedbackPercentage(good) {
-		this.utils.positivePercentage = Number(((good * 100) / this.utils.total).toFixed(0));
-	}
+    function countTotalFeedback() {
+        utils.total += 1;
+    }
 
-	render() {
-		const namesOfBtn = Object.keys(this.state);
-		const statisticsState = Object.entries(this.state);
+    function countPositiveFeedbackPercentage(good) {
+        utils.positivePercentage = Number(
+            ((good * 100) / this.utils.total).toFixed(0)
+        );
+    }
 
-		const { total, positivePercentage } = this.utils;
-		
-		return (
-			<Wrapper>
-				<Section title='Please leave feedback'>
-					<FeedbackOptions
-						options={namesOfBtn}
-						onLeaveFeedback={this.handleClick}
-					/>
-				</Section>
-				
-				<Section title="Statistics">
-					{total > 0 ? 
-						<Statistics
-							statisticsState={statisticsState}
-							total={total}
-							positivePercentage={positivePercentage}
-						/> :
-						<Notification message="There is no feedback"/>
-				}
-					
-				</Section>
-			</Wrapper>
-		);
-	}
-};
+    const { total, positivePercentage } = utils;
+
+    const statisticsState = {
+        good,
+        neutral,
+        bad,
+    };
+
+    const namesOfBtn = Object.keys(statisticsState);
+    const statisticsStateEntries = Object.entries(statisticsState);
+
+    return (
+        <Wrapper>
+            <Section title="Please leave feedback">
+                <FeedbackOptions
+                    options={namesOfBtn}
+                    onLeaveFeedback={handleClick}
+                />
+            </Section>
+
+            <Section title="Statistics">
+                {total > 0 ? (
+                    <Statistics
+                        statisticsState={statisticsStateEntries}
+                        total={total}
+                        positivePercentage={positivePercentage}
+                    />
+                ) : (
+                    <Notification message="There is no feedback" />
+                )}
+            </Section>
+        </Wrapper>
+    );
+}
