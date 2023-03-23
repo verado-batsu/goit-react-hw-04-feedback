@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { FeedbackOptions } from 'components/FeedbackOptions/FeedbackOptions';
 import { Statistics } from 'components/Statistics/Statistics';
@@ -8,10 +8,10 @@ import { Notification } from 'components/Notification/Notification';
 import { Wrapper } from 'components/App/App.styled';
 
 export function App() {
-    const utils = {
+    const utils = useRef({
         total: 0,
         positivePercentage: 0,
-    };
+    });
 
     const [good, setGood] = useState(0);
     const [neutral, setNeutral] = useState(0);
@@ -41,16 +41,16 @@ export function App() {
     }
 
     function countTotalFeedback() {
-        utils.total += 1;
+        utils.current.total += 1;
     }
 
     function countPositiveFeedbackPercentage(good) {
-        utils.positivePercentage = Number(
-            ((good * 100) / this.utils.total).toFixed(0)
+        utils.current.positivePercentage = Number(
+            ((good * 100) / utils.current.total).toFixed(0)
         );
     }
 
-    const { total, positivePercentage } = utils;
+    const { total, positivePercentage } = utils.current;
 
     const statisticsState = {
         good,
